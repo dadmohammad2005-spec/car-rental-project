@@ -1,0 +1,16 @@
+{% extends 'app/layout.html' %}
+{% block title %}Add Car{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Add New Car</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-success mt-2">Add Car</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

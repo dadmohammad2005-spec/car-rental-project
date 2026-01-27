@@ -1,0 +1,53 @@
+{% extends 'app/layout.html' %}
+{% block title %}Available Cars{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Available Cars</h2>
+
+<div class="row">
+    {% for item in cars_info %}
+        {% with car=item.car %}
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ car.name }} - {{ car.model }}</h5>
+
+                    <p class="card-text">
+                        <strong>Year:</strong> {{ car.year }} <br>
+                        <strong>Price / Day:</strong> Rs {{ car.price_per_day }} <br>
+                        <strong>Owner:</strong> {{ car.owner.username }}
+                    </p>
+
+                    {% if item.current_booking %}
+                        <p class="text-danger"><strong>Currently booked</strong></p>
+                    {% endif %}
+
+                    {% if item.future_bookings %}
+                        <div class="alert alert-warning p-2 mt-auto mb-2">
+                            <strong>Future bookings:</strong>
+                            <ul class="mb-0">
+                                {% for fb in item.future_bookings %}
+                                    <li>{{ fb.start_date }} to {{ fb.end_date }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'rent_car' car.id %}" class="btn btn-primary mt-auto w-100">
+                            Rent Now
+                        </a>
+                    {% else %}
+                        <p class="text-danger small mt-auto text-center">
+                            Login to rent this car
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+    {% empty %}
+        <p>No cars available right now.</p>
+    {% endfor %}
+</div>
+{% endblock %}

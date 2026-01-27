@@ -1,0 +1,14 @@
+/* Sticky footer CSS */
+html, body {
+    height: 100%;
+}
+body {
+    display: flex;
+    flex-direction: column;
+}
+.container {
+    flex: 1 0 auto; /* Content ko grow karne do, footer ko push kare */
+}
+footer {
+    flex-shrink: 0; /* Footer hamesha bottom par rahe */
+}

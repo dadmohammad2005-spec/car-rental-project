@@ -1,0 +1,49 @@
+{% extends 'app/layout.html' %}
+{% block title %}My Bookings{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">My Bookings</h2>
+
+<table class="table table-bordered align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Car</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Total Price</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for booking in bookings %}
+            <tr>
+                <td>{{ booking.car.name }} ({{ booking.car.model }})</td>
+                <td>{{ booking.start_date }}</td>
+                <td>{{ booking.end_date }}</td>
+                <td>Rs {{ booking.total_price }}</td>
+                <td>
+                    {% if booking.status == "confirmed" %}
+                        <span class="badge bg-success">{{ booking.status }}</span>
+                    {% elif booking.status == "cancelled" %}
+                        <span class="badge bg-danger">{{ booking.status }}</span>
+                    {% elif booking.status == "completed" %}
+                        <span class="badge bg-secondary">{{ booking.status }}</span>
+                    {% else %}
+                        <span class="badge bg-info">{{ booking.status }}</span>
+                    {% endif %}
+
+                    {% if booking.status == "confirmed" and booking.start_date > today %}
+                        <a href="{% url 'cancel_booking' booking.id %}" class="btn btn-sm btn-outline-danger ms-2">
+                            Cancel
+                        </a>
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">No bookings yet</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

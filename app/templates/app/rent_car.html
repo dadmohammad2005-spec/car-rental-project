@@ -1,0 +1,44 @@
+{% extends 'app/layout.html' %}
+{% block title %}Rent Car{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+
+        <div class="card shadow">
+            <div class="card-body">
+
+                <h4 class="mb-3">
+                    Rent {{ car.name }} ({{ car.model }})
+                </h4>
+
+                <p>
+                    <strong>Price per day:</strong> Rs {{ car.price_per_day }}
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+
+                    <button type="submit" class="btn btn-success w-100 mt-3">
+                        Confirm Rent
+                    </button>
+                </form>
+
+                {% if future_bookings %}
+                    <div class="alert alert-warning mt-3">
+                        <strong>Future Bookings:</strong>
+                        <ul>
+                            {% for fb in future_bookings %}
+                                <li>{{ fb.start_date }} to {{ fb.end_date }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

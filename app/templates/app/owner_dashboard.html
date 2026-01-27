@@ -1,0 +1,113 @@
+{% extends 'app/layout.html' %}
+{% block title %}Owner Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Owner Dashboard</h2>
+
+<div class="row mb-4">
+    <!-- Summary Cards -->
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">My Cars</h5>
+                <p class="card-text display-6">{{ cars.count }}</p>
+                <a href="{% url 'add_car' %}" class="btn btn-light btn-sm mt-2">Add New Car</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Bookings</h5>
+                <p class="card-text display-6">{{ bookings.count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Available Cars</h5>
+                <p class="card-text display-6">{{ available_cars }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- My Cars Table -->
+<h3 class="mt-4">My Cars</h3>
+<table class="table table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>Name</th>
+            <th>Model</th>
+            <th>Year</th>
+            <th>Price/Day</th>
+            <th>Available</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for car in cars %}
+            <tr>
+                <td>{{ car.name }}</td>
+                <td>{{ car.model }}</td>
+                <td>{{ car.year }}</td>
+                <td>Rs {{ car.price_per_day }}</td>
+                <td>
+                    {% if car.available %}
+                        <span class="badge bg-success">Yes</span>
+                    {% else %}
+                        <span class="badge bg-danger">No</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'edit_car' car.id %}" class="btn btn-sm btn-warning">Edit</a>
+                    <a href="{% url 'delete_car' car.id %}" class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No cars found</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Bookings Table -->
+<h3 class="mt-4">Bookings for My Cars</h3>
+<table class="table table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>Car</th>
+            <th>Renter</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Total Price</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for booking in bookings %}
+            <tr>
+                <td>{{ booking.car.name }} ({{ booking.car.model }})</td>
+                <td>{{ booking.renter.username }}</td>
+                <td>{{ booking.start_date }}</td>
+                <td>{{ booking.end_date }}</td>
+                <td>Rs {{ booking.total_price }}</td>
+                <td>
+                    <span class="badge 
+                        {% if booking.status == 'confirmed' %}bg-success
+                        {% elif booking.status == 'cancelled' %}bg-danger
+                        {% else %}bg-secondary{% endif %}">
+                        {{ booking.status }}
+                    </span>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No bookings found</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
