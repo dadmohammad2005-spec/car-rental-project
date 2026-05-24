@@ -1,49 +1,76 @@
 {% extends 'app/layout.html' %}
-{% block title %}My Bookings{% endblock %}
+{% block title %}My Bookings - CarRent{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">My Bookings</h2>
+<div class="mb-5">
+    <h2 class="fw-extrabold mb-1">My Reservations</h2>
+    <p class="text-secondary mb-0">Track and manage your current, past, and upcoming rentals</p>
+</div>
 
-<table class="table table-bordered align-middle">
-    <thead class="table-dark">
-        <tr>
-            <th>Car</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>Total Price</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for booking in bookings %}
-            <tr>
-                <td>{{ booking.car.name }} ({{ booking.car.model }})</td>
-                <td>{{ booking.start_date }}</td>
-                <td>{{ booking.end_date }}</td>
-                <td>Rs {{ booking.total_price }}</td>
-                <td>
-                    {% if booking.status == "confirmed" %}
-                        <span class="badge bg-success">{{ booking.status }}</span>
-                    {% elif booking.status == "cancelled" %}
-                        <span class="badge bg-danger">{{ booking.status }}</span>
-                    {% elif booking.status == "completed" %}
-                        <span class="badge bg-secondary">{{ booking.status }}</span>
-                    {% else %}
-                        <span class="badge bg-info">{{ booking.status }}</span>
-                    {% endif %}
-
-                    {% if booking.status == "confirmed" and booking.start_date > today %}
-                        <a href="{% url 'cancel_booking' booking.id %}" class="btn btn-sm btn-outline-danger ms-2">
-                            Cancel
-                        </a>
-                    {% endif %}
-                </td>
-            </tr>
-        {% empty %}
-            <tr>
-                <td colspan="5" class="text-center">No bookings yet</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="glass-panel p-4">
+    {% if bookings %}
+        <div class="table-responsive-glass">
+            <table class="table table-glass align-middle">
+                <thead>
+                    <tr>
+                        <th>Vehicle</th>
+                        <th>Pickup Date</th>
+                        <th>Return Date</th>
+                        <th>Total Cost</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary bg-opacity-10 text-primary rounded p-2 me-3">
+                                        <i class="bi bi-car-front-fill fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-white fw-bold d-block">{{ booking.car.name }}</span>
+                                        <small class="text-muted">{{ booking.car.model }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><i class="bi bi-calendar-event me-2 text-muted"></i>{{ booking.start_date }}</td>
+                            <td><i class="bi bi-calendar-check me-2 text-muted"></i>{{ booking.end_date }}</td>
+                            <td class="text-white fw-bold">Rs {{ booking.total_price }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if booking.status == 'confirmed' %}bg-success
+                                    {% elif booking.status == 'cancelled' %}bg-danger
+                                    {% elif booking.status == 'completed' %}bg-secondary
+                                    {% else %}bg-warning{% endif %}">
+                                    {{ booking.status }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                {% if booking.status == "confirmed" and booking.start_date > today %}
+                                    <a href="{% url 'cancel_booking' booking.id %}" class="btn btn-outline-danger btn-sm px-3 py-1.5" onclick="return confirm('Are you sure you want to cancel this booking?');">
+                                        <i class="bi bi-trash3 me-1"></i> Cancel
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted small">No actions</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-calendar-x display-1 text-muted mb-3 d-block"></i>
+            <h4 class="text-white">No Rentals Yet</h4>
+            <p class="text-secondary mb-4">You haven't rented any cars yet. Head over to our catalog to get started!</p>
+            <a href="{% url 'car_list' %}" class="btn btn-primary">
+                Browse Fleet <i class="bi bi-arrow-right-short ms-1"></i>
+            </a>
+        </div>
+    {% endif %}
+</div>
 {% endblock %}
+

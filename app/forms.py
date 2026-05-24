@@ -1,8 +1,9 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Booking, Car
+from .models import Booking, Car, Profile
 from datetime import date
+
 
 
 # ------------------- ADD CAR FORM -------------------
@@ -66,7 +67,27 @@ class UserRegistrationForm(UserCreationForm):
     password2 = forms.CharField(label='', widget=forms.PasswordInput(attrs={
         'class': 'form-control', 'placeholder': 'Confirm Password'
     }))
+    
+    ROLE_CHOICES = [
+        ('renter', 'Renter (I want to rent cars)'),
+        ('owner', 'Car Owner (I want to list my cars)'),
+    ]
+    role = forms.ChoiceField(
+        choices=ROLE_CHOICES,
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
+        initial='renter',
+        label='Register As'
+    )
 
     class Meta:
         model = User
         fields = ['username', 'email', 'password1', 'password2']
+
+    def save(self, commit=True):
+        user = super().save(commit=commit)
+        role = self.cleaned_data.get('role')
+        profile, created = Profile.objects.get_or_create(user=user)
+        profile.is_owner = (role == 'owner')
+        profile.save()
+        return user
+

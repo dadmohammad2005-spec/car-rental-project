@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import Car, Booking
+from .models import Car, Booking, Profile
+
+
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'is_owner')
+    list_filter = ('is_owner',)
+    search_fields = ('user__username',)
 
 
 @admin.register(Car)
@@ -16,3 +23,4 @@ class BookingAdmin(admin.ModelAdmin):
     )
     list_filter = ('status', 'start_date')
     search_fields = ('car__name', 'renter__username')
+

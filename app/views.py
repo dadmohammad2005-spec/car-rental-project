@@ -8,9 +8,34 @@ from .models import Car, Booking
 from .forms import UserLoginForm, UserRegistrationForm, RentCarForm, AddCarForm
 
 
+# ------------------- VIEW DECORATORS -------------------
+def owner_required(view_func):
+    """Decorator to restrict access to car owners only."""
+    @login_required
+    def _wrapped_view(request, *args, **kwargs):
+        if not hasattr(request.user, 'profile') or not request.user.profile.is_owner:
+            messages.error(request, "Access denied. Only car owners can access this page.")
+            return redirect('car_list')
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+
+def renter_required(view_func):
+    """Decorator to restrict access to renters only."""
+    @login_required
+    def _wrapped_view(request, *args, **kwargs):
+        if hasattr(request.user, 'profile') and request.user.profile.is_owner:
+            messages.error(request, "Access denied. Car owners cannot perform this action.")
+            return redirect('owner_dashboard')
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+
 # ------------------- HOME / LOGIN -------------------
 def home(request):
     if request.user.is_authenticated:
+        if hasattr(request.user, 'profile') and request.user.profile.is_owner:
+            return redirect('owner_dashboard')
         return redirect('car_list')
 
     form = UserLoginForm(request.POST or None)
@@ -23,6 +48,8 @@ def home(request):
         if user:
             login(request, user)
             messages.success(request, "Logged in successfully")
+            if hasattr(user, 'profile') and user.profile.is_owner:
+                return redirect('owner_dashboard')
             return redirect('car_list')
         messages.error(request, "Invalid credentials")
 
@@ -31,12 +58,18 @@ def home(request):
 
 # ------------------- REGISTER -------------------
 def register(request):
+    if request.user.is_authenticated:
+        if hasattr(request.user, 'profile') and request.user.profile.is_owner:
+            return redirect('owner_dashboard')
+        return redirect('car_list')
+
     form = UserRegistrationForm(request.POST or None)
-    print("Testing Running")
     if request.method == 'POST' and form.is_valid():
         user = form.save()
         login(request, user)
         messages.success(request, "Account created successfully")
+        if hasattr(user, 'profile') and user.profile.is_owner:
+            return redirect('owner_dashboard')
         return redirect('car_list')
     return render(request, 'app/register.html', {'form': form})
 
@@ -49,7 +82,7 @@ def logout_user(request):
 
 
 # ------------------- ADD CAR -------------------
-@login_required
+@owner_required
 def add_car(request):
     if request.method == 'POST':
         form = AddCarForm(request.POST)
@@ -65,10 +98,6 @@ def add_car(request):
 
 
 # ------------------- CAR LIST -------------------
-
-
-from datetime import date
-
 def car_list(request):
     cars = Car.objects.all()
     cars_info = []
@@ -99,7 +128,7 @@ def car_list(request):
 
 
 # ------------------- RENT CAR -------------------
-@login_required
+@renter_required
 def rent_car(request, car_id):
     car = get_object_or_404(Car, id=car_id)
     form = RentCarForm(request.POST or None)
@@ -144,14 +173,14 @@ def rent_car(request, car_id):
 
 
 # ------------------- MY BOOKINGS -------------------
-@login_required
+@renter_required
 def my_bookings(request):
     bookings = Booking.objects.filter(renter=request.user).order_by('-start_date')
     return render(request, 'app/my_bookings.html', {'bookings': bookings, 'today': date.today()})
 
 
 # ------------------- CANCEL BOOKING -------------------
-@login_required
+@renter_required
 def cancel_booking(request, booking_id):
     booking = get_object_or_404(
         Booking,
@@ -171,7 +200,7 @@ def cancel_booking(request, booking_id):
 
 
 # ------------------- OWNER DASHBOARD -------------------
-@login_required
+@owner_required
 def owner_dashboard(request):
     cars = Car.objects.filter(owner=request.user)
     bookings = Booking.objects.filter(car__owner=request.user).order_by('-start_date')
@@ -184,7 +213,7 @@ def owner_dashboard(request):
     })
 
 
-@login_required
+@owner_required
 def edit_car(request, car_id):
     car = get_object_or_404(Car, id=car_id, owner=request.user)
     if request.method == 'POST':
@@ -198,7 +227,7 @@ def edit_car(request, car_id):
     return render(request, 'app/edit_car.html', {'form': form, 'car': car})
 
 
-@login_required
+@owner_required
 def delete_car(request, car_id):
     car = get_object_or_404(Car, id=car_id, owner=request.user)
     if request.method == 'POST':
@@ -206,3 +235,4 @@ def delete_car(request, car_id):
         messages.success(request, "Car deleted successfully!")
         return redirect('owner_dashboard')
     return render(request, 'app/delete_car.html', {'car': car})
+
